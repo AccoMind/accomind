@@ -16,6 +16,7 @@ class ChatMessage(BaseModel):
     class Config:
         orm_mode = True
 
+
 class ChatSchema(BaseModel):
     id: int
     created_at: datetime.datetime
@@ -26,5 +27,11 @@ class ChatSchema(BaseModel):
     class Config:
         orm_mode = True
 
+
 class ChatMessageRequestSchema(BaseModel):
     message: str
+
+
+class ChatHistorySchema(BaseModel):
+    role: str
+    content: str

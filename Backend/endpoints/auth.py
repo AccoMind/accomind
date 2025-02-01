@@ -9,12 +9,12 @@ from core.security import (
 )
 from db.session import get_db
 from models.user import User
-from schemas.auth import LoginSchema, RegisterSchema
+from schemas.auth import LoginResponseSchema, LoginSchema, RegisterResponseSchema, RegisterSchema
 
 router = APIRouter()
 
 
-@router.post("/login")
+@router.post("/login", response_model=LoginResponseSchema)
 async def login(
         login_data: LoginSchema,
         db: Session = Depends(get_db)
@@ -33,12 +33,15 @@ async def login(
         expires_delta=access_token_expires
     )
 
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    return LoginResponseSchema(
+        full_name=user.full_name,
+        email=user.email,
+        username=user.email,
+        token=access_token
+    )
 
-@router.post("/register")
+
+@router.post("/register", response_model=RegisterResponseSchema)
 async def register(
         register_data: RegisterSchema,
         db: Session = Depends(get_db)
