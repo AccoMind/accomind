@@ -15,11 +15,11 @@ router = APIRouter()
 
 
 @router.post("/login", response_model=LoginResponseSchema)
-async def login(
+async def login_user(
         login_data: LoginSchema,
         db: Session = Depends(get_db)
 ):
-    user = db.query(User).filter(User.username == login_data.username).first()
+    user = db.query(User).filter(User.email == login_data.email).first()
     if not user or not verify_password(login_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -42,7 +42,7 @@ async def login(
 
 
 @router.post("/register", response_model=RegisterResponseSchema)
-async def register(
+async def register_new_user(
         register_data: RegisterSchema,
         db: Session = Depends(get_db)
 ):
