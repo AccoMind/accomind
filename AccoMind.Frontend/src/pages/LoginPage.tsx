@@ -29,12 +29,10 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen">
-
-      <div className="min-h-screen flex flex-col justify-center mx-80 bg-gray-100 p-10">
-
+    <div>
+      <div className="">
         <div className="flex flex-1 items-center justify-center px-30">
-          <Card className="w-full max-w-full bg-white rounded-lg shadow-lg p-6">
+          <Card className="w-[500px] my-20 bg-white rounded-lg shadow-lg p-6">
             <CardHeader>
               <CardTitle className="text-center text-2xl font-bold">Login</CardTitle>
             </CardHeader>
