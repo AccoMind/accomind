@@ -1,3 +1,4 @@
+from email import message
 from typing import Optional
 
 from fastapi import HTTPException
@@ -15,26 +16,7 @@ class ChatService:
         return db.query(Chat).filter(Chat.user_id == user_id).all()
 
     @staticmethod
-    def create_chat(chat_message: str, db: Session, user_id: int):
-
-        chat = Chat(user_id=user_id)
-        db.add(chat)
-        db.commit()
-        db.refresh(chat)
-
-        ChatService.create_chat_message(db, chat.id, chat_message)
-
-        llm_response = LLMService().generate_response([ChatHistorySchema(
-            role="user", content=chat_message
-        )])
-
-        llm_response = ChatService.create_chat_message(
-            db, chat.id, llm_response, MessageSource.BOT)
-
-        return llm_response
-
-    @staticmethod
-    def get_chat_with_messages(db: Session, chat_id: int, current_user: int):
+    def get_chat_by_id(db: Session, chat_id: int, current_user: int):
         chat = db.query(Chat).filter(
             Chat.id == chat_id and Chat.user_id == current_user).first()
 
@@ -46,7 +28,24 @@ class ChatService:
         return chat
 
     @staticmethod
-    def new_user_prompt(db: Session, chat_id: int, message: str):
+    def create_chat(chat_message: str, db: Session, user_id: int, filters: dict = {}):
+
+        chat = Chat(user_id=user_id)
+        db.add(chat)
+        db.commit()
+        db.refresh(chat)
+
+        llm_response = LLMService().generate_response(chat_message, filters=filters)
+
+        ChatService.create_chat_message(db, chat.id, chat_message)
+
+        llm_response = ChatService.create_chat_message(
+            db, chat.id, llm_response, MessageSource.BOT)
+
+        return llm_response
+
+    @staticmethod
+    def new_user_prompt(db: Session, chat_id: int, message: str, filters: dict = {}):
 
         ChatService.create_chat_message(db, chat_id, message)
 
@@ -60,7 +59,7 @@ class ChatService:
                 role="assistant" if chat.source == MessageSource.BOT else MessageSource.USER, content=chat.message
             ))
 
-        response = LLMService().generate_response(messages)
+        response = LLMService().generate_response(message, messages, filters=filters)
 
         response = ChatService.create_chat_message(
             db, chat_id, response, MessageSource.BOT)

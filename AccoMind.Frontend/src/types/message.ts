@@ -1,5 +1,12 @@
+export type Filter = {
+    company?: string
+    year?: number
+}
+
 export type Message = {
     id?: number
+    chat_id?: number
+    filters?: Filter | null
     message: string
     source: string
     created_at: string

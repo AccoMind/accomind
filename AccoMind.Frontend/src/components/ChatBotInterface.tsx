@@ -1,68 +1,69 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Menu, Send, User } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ChatService from "@/services/chatService";
 import { Message } from "@/types/message";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 const ChatBotInterface: React.FC = () => {
+  const [company, setCompany] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
 
   const navigate = useNavigate();
 
-  const queryClient = useQueryClient();
 
   const { id } = useParams();
 
-
-  const query = useQuery(
-    {
-      queryKey: ["messages", { id }],
-      queryFn: () => ChatService.getChatById(id!),
-      enabled: !!id,
+  useEffect(() => {
+    if (id) {
+      ChatService.getChatById(id!)
+        .then((response) => {
+          setMessages(response.data.messages);
+        });
     }
-  )
+  }, [id]);
 
-  const mutation = useMutation({
-    mutationFn: (message: string) => ChatService.newChatMessage(id!, message),
-    onError: (error, variables, context) => {
-      console.log(error)
-      queryClient.setQueryData(["messages", { id }], context)
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries(["messages", { id }])
-    }
-  })
+  const onNewChat = (messageObj: Message) => {
+    ChatService.createChat(messageObj)
+      .then((response) => {
+        navigate(`/${response.data.chat_id}`);
+      });
+  }
 
-  const newChatMutation = useMutation({
-    mutationFn: (message: string) => ChatService.createChat({ message }),
-    onSettled: (data) => {
-      console.log(data)
-      navigate(`/${data?.data.chat_id}`)
-      queryClient.invalidateQueries(["messages", { id }])
-    }
-  })
+
+
+  const onNewChatMessage = async (messageObj: Message) => {
+
+    ChatService.newChatMessage(id!, messageObj)
+      .then((response) => {
+        navigate(`/${response?.data.chat_id}`)
+        setMessages((prevMessages) => [...prevMessages, response.data]);
+      });
+  }
 
 
   const handleSendMessage = () => {
     if (newMessage.trim() === "") return;
 
     const userMessage: Message = {
+      filters: {
+        company: company,
+      },
       message: newMessage,
       source: "user",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
 
-    if (id)
-      mutation.mutate(newMessage);
-    else
-      newChatMutation.mutate(newMessage);
-
     setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+    if (id)
+      onNewChatMessage(userMessage);
+    else
+      onNewChat(userMessage);
 
     setNewMessage("");
   };
@@ -75,13 +76,14 @@ const ChatBotInterface: React.FC = () => {
           <h2 className="text-lg font-bold text-gray-900">Chat Options</h2>
           <Menu className="h-6 w-6 text-gray-700" />
         </div>
-        <nav className="space-y-4 flex-1">
+        <div className="flex-1"></div>
+        {/* <nav className="space-y-4 flex-1">
           <Button className="w-full text-left">New Chat</Button>
           <Button className="w-full text-left">Recent Chats</Button>
           <Button className="w-full text-left">Top 10 Growing Companies</Button>
           <Button className="w-full text-left">Fix this code</Button>
           <Button className="w-full text-left">Sample Copy</Button>
-        </nav>
+        </nav> */}
         <div className="mt-4 flex items-center p-2 bg-gray-200 rounded-md">
           <User className="h-6 w-6 text-gray-700" />
           <div className="ml-2">
@@ -95,7 +97,7 @@ const ChatBotInterface: React.FC = () => {
       <main className="flex-1 flex flex-col">
         {/* Chat Messages */}
         <div className="flex-1 p-4 overflow-y-auto space-y-4">
-          {query.data?.data.messages.map((message) => (
+          {messages.map((message) => (
             <div
               key={message.id}
               className={`flex ${message.source === "user" ? "justify-end" : "justify-start"
@@ -114,19 +116,43 @@ const ChatBotInterface: React.FC = () => {
         </div>
 
         {/* Input Area */}
-        <div className="border-t p-4 bg-white flex items-center">
-          <Input
-            className="flex-1"
-            placeholder="Type a new message here"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-          />
-          <Button
-            onClick={handleSendMessage}
-            className="ml-4 bg-blue-500 hover:bg-blue-600 text-white"
-          >
-            <Send className="h-5 w-5" />
-          </Button>
+        <div className="border-t p-4 bg-white">
+          <div className="mb-4 flex gap-4">
+            <Select onValueChange={(value) => setCompany(value)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select Company" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="COMMERCIAL_BANK_PLC">COMMERCIAL BANK PLC</SelectItem>
+                <SelectItem value="NDB_BANK_PLC">NDB BANK PLC</SelectItem>
+                <SelectItem value="ABANS_ELECTRICALS_PLC">ABANS ELECTRICALS PLC</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select onValueChange={(value) => setCompany(value)}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Select YEAR" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2024">2024</SelectItem>
+                <SelectItem value="2023">2023</SelectItem>
+                <SelectItem value="2022">2022</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center">
+            <Input
+              className="flex-1"
+              placeholder="Type a new message here"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+            />
+            <Button
+              onClick={handleSendMessage}
+              className="ml-4 bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              <Send className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </main>
     </div>

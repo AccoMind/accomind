@@ -30,6 +30,7 @@ class ChatSchema(BaseModel):
 
 class ChatMessageRequestSchema(BaseModel):
     message: str
+    filters: dict
 
 
 class ChatHistorySchema(BaseModel):

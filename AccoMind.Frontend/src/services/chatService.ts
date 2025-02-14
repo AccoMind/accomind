@@ -1,5 +1,5 @@
 import http from "@/http-common"
-import { Chat, Message, NewChatMessage } from "@/types/message"
+import { Chat, Message } from "@/types/message"
 
 export default class ChatService {
 
@@ -13,11 +13,11 @@ export default class ChatService {
         return http.get<Chat>(`${ChatService.path}/${id}`)
     }
 
-    public static createChat(chatMessage: NewChatMessage) {
+    public static createChat(chatMessage: Message) {
         return http.post(`${ChatService.path}/`, chatMessage)
     }
 
-    public static newChatMessage(id: string, message: string) {
-        return http.post<Message>(`${ChatService.path}/${id}/message`, { message })
+    public static newChatMessage(id: string, message: Message) {
+        return http.post<Message>(`${ChatService.path}/${id}/message`, message)
     }
 }
