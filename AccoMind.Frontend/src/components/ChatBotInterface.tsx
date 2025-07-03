@@ -1,27 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Menu, Send, User } from "lucide-react";
+import { Menu, Send, Plus, MessageCircle } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import ChatService from "@/services/chatService";
 import { Message } from "@/types/message";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import Navbar from "@/components/Navbar";
 
 const ChatBotInterface: React.FC = () => {
   const [company, setCompany] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
-
-
   const { id } = useParams();
 
   useEffect(() => {
     if (id) {
+      setIsLoading(true);
       ChatService.getChatById(id!)
         .then((response) => {
           setMessages(response.data.messages);
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          setError("Failed to load chat. Please try again.");
+          setIsLoading(false);
         });
     }
   }, [id]);
@@ -33,17 +41,13 @@ const ChatBotInterface: React.FC = () => {
       });
   }
 
-
-
   const onNewChatMessage = async (messageObj: Message) => {
-
     ChatService.newChatMessage(id!, messageObj)
       .then((response) => {
         navigate(`/${response?.data.chat_id}`)
         setMessages((prevMessages) => [...prevMessages, response.data]);
       });
   }
-
 
   const handleSendMessage = () => {
     if (newMessage.trim() === "") return;
@@ -68,93 +72,142 @@ const ChatBotInterface: React.FC = () => {
     setNewMessage("");
   };
 
+  const handleNewChat = () => {
+    setMessages([]);
+    navigate("/");
+  };
+
   return (
-    <div className="h-screen flex bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-blue-100 p-4 flex flex-col">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-gray-900">Chat Options</h2>
-          <Menu className="h-6 w-6 text-gray-700" />
-        </div>
-        <div className="flex-1"></div>
-        {/* <nav className="space-y-4 flex-1">
-          <Button className="w-full text-left">New Chat</Button>
-          <Button className="w-full text-left">Recent Chats</Button>
-          <Button className="w-full text-left">Top 10 Growing Companies</Button>
-          <Button className="w-full text-left">Fix this code</Button>
-          <Button className="w-full text-left">Sample Copy</Button>
-        </nav> */}
-        <div className="mt-4 flex items-center p-2 bg-gray-200 rounded-md">
-          <User className="h-6 w-6 text-gray-700" />
-          <div className="ml-2">
-            <p className="text-sm text-gray-800">Welcome back,</p>
-            <p className="text-sm font-bold text-gray-900">User</p>
-          </div>
-        </div>
-      </aside>
-
-      {/* Chat Area */}
-      <main className="flex-1 flex flex-col">
-        {/* Chat Messages */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.source === "user" ? "justify-end" : "justify-start"
-                }`}
+    <div className="h-screen flex flex-col bg-gray-50">
+      {/* Navbar */}
+      <Navbar />
+      
+      <div className="flex-1 flex">
+        {/* Sidebar */}
+        <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 overflow-hidden bg-white border-r border-gray-200 flex flex-col`}>
+          <div className="p-4 border-b border-gray-200">
+            <Button 
+              onClick={handleNewChat}
+              className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700"
             >
-              <div
-                className={`max-w-xs p-3 rounded-lg shadow ${message.source === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-900"
-                  }`}
-              >
-                {message.message}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Input Area */}
-        <div className="border-t p-4 bg-white">
-          <div className="mb-4 flex gap-4">
-            <Select onValueChange={(value) => setCompany(value)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select Company" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="COMMERCIAL_BANK_PLC">COMMERCIAL BANK PLC</SelectItem>
-                <SelectItem value="NDB_BANK_PLC">NDB BANK PLC</SelectItem>
-                <SelectItem value="ABANS_ELECTRICALS_PLC">ABANS ELECTRICALS PLC</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select onValueChange={(value) => setCompany(value)}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Select YEAR" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="2024">2024</SelectItem>
-                <SelectItem value="2023">2023</SelectItem>
-                <SelectItem value="2022">2022</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center">
-            <Input
-              className="flex-1"
-              placeholder="Type a new message here"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-            />
-            <Button
-              onClick={handleSendMessage}
-              className="ml-4 bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              <Send className="h-5 w-5" />
+              <Plus className="h-4 w-4" />
+              <span>New Chat</span>
             </Button>
           </div>
-        </div>
-      </main>
+          
+          <div className="flex-1 p-4">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+              Recent Chats
+            </h3>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
+                <MessageCircle className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-600 truncate">Previous conversation...</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Chat Area */}
+        <main className="flex-1 flex flex-col">
+          {/* Chat Header */}
+          <div className="bg-white border-b border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  {id ? `Chat ${id}` : "New Chat"}
+                </h1>
+              </div>
+            </div>
+          </div>
+
+          {/* Chat Messages */}
+          <div className="flex-1 p-4 overflow-y-auto space-y-4">
+            {messages.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Start a new conversation
+                  </h3>
+                  <p className="text-gray-500">
+                    Ask questions about financial reports and company data
+                  </p>
+                </div>
+              </div>
+            ) : (
+              messages.map((message, index) => (
+                <div
+                  key={message.id || index}
+                  className={`flex ${message.source === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-xs lg:max-w-md p-3 rounded-lg shadow-sm ${
+                      message.source === "user"
+                        ? "bg-blue-600 text-white"
+                        : "bg-white text-gray-900 border border-gray-200"
+                    }`}
+                  >
+                    <p className="text-sm">{message.message}</p>
+                    <p className="text-xs mt-1 opacity-70">
+                      {new Date(message.created_at).toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Input Area */}
+          <div className="border-t border-gray-200 p-4 bg-white">
+            <div className="mb-4 flex gap-4">
+              <Select onValueChange={(value) => setCompany(value)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select Company" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="COMMERCIAL_BANK_PLC">COMMERCIAL BANK PLC</SelectItem>
+                  <SelectItem value="NDB_BANK_PLC">NDB BANK PLC</SelectItem>
+                  <SelectItem value="ABANS_ELECTRICALS_PLC">ABANS ELECTRICALS PLC</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select onValueChange={(value) => setCompany(value)}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Select YEAR" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2024">2024</SelectItem>
+                  <SelectItem value="2023">2023</SelectItem>
+                  <SelectItem value="2022">2022</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Input
+                className="flex-1"
+                placeholder="Type a message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim()}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 };
