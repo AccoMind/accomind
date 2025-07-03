@@ -18,15 +18,18 @@ http.interceptors.request.use((config) => {
     return Promise.reject(error)
 })
 
-http.interceptors.response.use((response) => {
-    // if unauthorized, log out
-
-    if (response.status === 401) {
-        useAuthStore.getState().logout()
-        window.location = "/login"
+http.interceptors.response.use(
+    (response) => {
+        return response;
+    },
+    (error) => {
+        // Handle 401 Unauthorized errors
+        if (error.response?.status === 401) {
+            useAuthStore.getState().logout();
+            window.location.href = "/login";
+        }
+        return Promise.reject(error);
     }
-
-    return response
-})
+)
 
 export default http
