@@ -2,7 +2,7 @@ from email import message
 from typing import Optional
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from schemas.chat import ChatHistorySchema
 from models.chat import Chat, ChatMessage, MessageSource
@@ -13,7 +13,7 @@ class ChatService:
 
     @staticmethod
     def get_all_chats(db: Session, user_id: int):
-        return db.query(Chat).filter(Chat.user_id == user_id).all()
+        return db.query(Chat).options(joinedload(Chat.messages)).filter(Chat.user_id == user_id).order_by(Chat.created_at.desc()).all()
 
     @staticmethod
     def get_chat_by_id(db: Session, chat_id: int, current_user: int):
