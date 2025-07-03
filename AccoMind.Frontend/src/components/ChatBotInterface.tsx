@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Menu, Send, Plus, MessageCircle } from "lucide-react";
+import { Menu, Send, Plus, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import ChatService from "@/services/chatService";
-import { Message } from "@/types/message";
+import { Chat, Message } from "@/types/message";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import Navbar from "@/components/Navbar";
 
@@ -15,10 +15,18 @@ const ChatBotInterface: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [chatHistory, setChatHistory] = useState<Chat[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const navigate = useNavigate();
   const { id } = useParams();
 
+  // Load chat history on component mount
+  useEffect(() => {
+    loadChatHistory();
+  }, []);
+
+  // Load specific chat when id changes
   useEffect(() => {
     if (id) {
       setIsLoading(true);
@@ -31,13 +39,28 @@ const ChatBotInterface: React.FC = () => {
           setError("Failed to load chat. Please try again.");
           setIsLoading(false);
         });
+    } else {
+      setMessages([]);
     }
   }, [id]);
+
+  const loadChatHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const response = await ChatService.getAllChats();
+      setChatHistory(response.data);
+    } catch (err) {
+      console.error("Failed to load chat history:", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
   const onNewChat = (messageObj: Message) => {
     ChatService.createChat(messageObj)
       .then((response) => {
         navigate(`/${response.data.chat_id}`);
+        loadChatHistory(); // Refresh chat history
       });
   }
 
@@ -100,10 +123,42 @@ const ChatBotInterface: React.FC = () => {
               Recent Chats
             </h3>
             <div className="space-y-2">
-              <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
-                <MessageCircle className="h-4 w-4 text-gray-400" />
-                <span className="text-sm text-gray-600 truncate">Previous conversation...</span>
-              </div>
+              {loadingHistory ? (
+                <div className="flex items-center justify-center p-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                </div>
+              ) : chatHistory.length === 0 ? (
+                <div className="text-center p-4 text-gray-500 text-sm">
+                  No previous chats
+                </div>
+              ) : (
+                chatHistory.map((chat) => {
+                  const firstMessage = chat.messages?.[0];
+                  const isActive = id === chat.id.toString();
+                  
+                  return (
+                    <div
+                      key={chat.id}
+                      onClick={() => navigate(`/${chat.id}`)}
+                      className={`flex items-center space-x-2 p-2 rounded-lg cursor-pointer transition-colors ${
+                        isActive 
+                          ? 'bg-blue-100 border border-blue-200' 
+                          : 'hover:bg-gray-100'
+                      }`}
+                    >
+                      <MessageCircle className={`h-4 w-4 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-sm truncate block ${isActive ? 'text-blue-900' : 'text-gray-600'}`}>
+                          {firstMessage?.message || 'New conversation'}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {new Date(chat.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </aside>
@@ -118,8 +173,13 @@ const ChatBotInterface: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="bg-white hover:bg-gray-50 border border-gray-200"
                 >
-                  <Menu className="h-5 w-5" />
+                  {sidebarOpen ? (
+                    <ChevronLeft className="h-5 w-5 text-gray-700" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-gray-700" />
+                  )}
                 </Button>
                 <h1 className="text-lg font-semibold text-gray-900">
                   {id ? `Chat ${id}` : "New Chat"}
