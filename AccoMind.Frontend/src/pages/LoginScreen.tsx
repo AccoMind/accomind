@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import AuthService from "@/services/authService";
 import useAuthStore from "@/stores/AuthStore";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 
-const LoginPage: React.FC = () => {
+const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -77,4 +77,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default LoginScreen;

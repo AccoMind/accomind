@@ -1,5 +1,5 @@
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
-import {Bar, BarChart, ResponsiveContainer, XAxis, YAxis} from "recharts";
+import {Bar, BarChart, ResponsiveContainer, XAxis} from "recharts";
 
 export default function Revenue() {
     // fake data for the last five years.

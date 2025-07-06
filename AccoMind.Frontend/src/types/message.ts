@@ -1,6 +1,6 @@
 export type Filter = {
     company?: string
-    year?: number
+    year?: string
 }
 
 export type Message = {

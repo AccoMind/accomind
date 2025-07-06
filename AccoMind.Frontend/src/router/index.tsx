@@ -1,24 +1,25 @@
-import ChatBotInterface from "@/components/ChatBotInterface"
-import LoginPage from "@/pages/LoginPage"
-// import LoginPage from "@/pages/LoginPage"
-import useAuthStore from "@/stores/AuthStore"
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router"
+import LoginScreen from "@/pages/LoginScreen.tsx"
+import {BrowserRouter, Routes, Route} from "react-router-dom"
+import LandingScreen from "@/pages/LandingScreen";
+import CompanyScreen from "@/pages/CompanyScreen";
+import ChatScreen from "@/pages/ChatScreen";
+import CompanyDashboard from "@/pages/CompanyDashboard";
 
 export default function Router() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/" Component={ProtectedRoute}>
-                    <Route path="/:id?" element={<ChatBotInterface />} />
-                </Route>
+                <Route path="/login" Component={LoginScreen}/>
+                <Route path="/" Component={LandingScreen}/>
+                <Route path="/company/:id" Component={CompanyDashboard} />
+                <Route path="/c/:id?" Component={ChatScreen}/>
             </Routes>
         </BrowserRouter>
     )
 }
 
-function ProtectedRoute() {
-    const isAuthenticated = useAuthStore(state => state.isAuthenticated)
-
-    return isAuthenticated() ? <Outlet /> : <Navigate to="/login" replace />
-}
+// function ProtectedRoute() {
+//     const isAuthenticated = useAuthStore(state => state.isAuthenticated)
+//
+//     return isAuthenticated() ? <Outlet/> : <Navigate to="/login" replace/>
+// }

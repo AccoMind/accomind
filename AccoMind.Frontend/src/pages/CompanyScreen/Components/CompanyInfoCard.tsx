@@ -1,15 +1,29 @@
-import React from 'react';
-import LogoCard from '../components/LogoCard';
+import React, {useEffect} from 'react';
+import LogoCard from '../../../components/LogoCard.tsx';
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card.tsx";
-import CurrentSharePrice from "@/pages/CompanyScreen/CurrentSharePrice.tsx";
-import Revenue from "@/pages/CompanyScreen/Revenue.tsx";
 import {MdLocationOn} from "react-icons/md";
 import {TbWorldWww} from "react-icons/tb";
+import {useParams} from "react-router-dom";
+import {CompanyService} from "@/services/companyService.ts";
+import {CompanyByIdType} from "@/types/company.ts";
 
 
 const CompanyInfoCard: React.FC = () => {
+    const [currentCompany, setCurrentCompany] = React.useState<CompanyByIdType | null>(null);
+
+    const {id} = useParams<{ id: string }>();
+
+    useEffect(() => {
+        if (id)
+            CompanyService.getCompany(id)
+                .then((response) => {
+                    setCurrentCompany(response.data)
+                })
+    }, [id])
+
+
     return (
-            <Card>
+        (<Card>
                 <div className="flex justify-center">
                     <div className="py-6 px-3">
                         <LogoCard logoText="AB"/>
@@ -17,21 +31,14 @@ const CompanyInfoCard: React.FC = () => {
                     <div>
                         <CardHeader>
                             <CardTitle>
-                                ABANS ELECTRICALS PLC
+                                {currentCompany?.name}
                             </CardTitle>
                             <CardDescription>
-                                ABANS.N0000 · Electricals and Engineering · Since 2010
+                                {currentCompany?.stock_symbol} · {currentCompany?.industry} · {currentCompany?.founded}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            Abans PLC is a leading Sri Lankan conglomerate, renowned for its diverse portfolio of
-                            businesses
-                            spanning across retail, distribution,
-                            manufacturing, and services. With a strong presence in the electronics, home appliances,
-                            furniture,
-                            and consumer goods sectors, Abans
-                            PLC is committed to delivering high-quality products and innovative solutions to its
-                            customers.
+                            {currentCompany?.description}
                         </CardContent>
                         <CardFooter>
                             <div className="flex items-center gap-6">
@@ -42,6 +49,7 @@ const CompanyInfoCard: React.FC = () => {
                     </div>
                 </div>
             </Card>
+        )
     );
 };
 

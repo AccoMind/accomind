@@ -1,7 +1,11 @@
+import {Card, CardHeader, CardTitle} from "@/components/ui/card.tsx";
+
 export default function EarningsPerShare() {
     return (
-        <div>
-            <h1>Earnings Per Share</h1>
-        </div>
+        <Card>
+            <CardHeader>
+                <CardTitle>Earnings Per Share</CardTitle>
+            </CardHeader>
+        </Card>
     )
 }
