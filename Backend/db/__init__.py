@@ -1,1 +1,1 @@
-from models import chat, user
+from models import chat, user, company, market_info

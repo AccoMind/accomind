@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -14,7 +15,7 @@ class ChatMessage(BaseModel):
     chat_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ChatSchema(BaseModel):
@@ -25,12 +26,12 @@ class ChatSchema(BaseModel):
     messages: list[ChatMessage]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ChatMessageRequestSchema(BaseModel):
-    message: str
-    filters: dict
+    content: str
+    filters: Optional[dict] = None
 
 
 class ChatHistorySchema(BaseModel):

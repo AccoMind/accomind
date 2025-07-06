@@ -23,15 +23,15 @@ class Chat(Base):
 
 class MessageSource(enum.Enum):
     USER = "user"
-    BOT = "bot"
+    ASSISTANT = "assistant"
 
 
 class ChatMessage(Base):
     __tablename__ = "chat_message"
 
     id = Column(Integer, primary_key=True, index=True)
-    message = Column(String(5000))
-    source = Column(Enum(MessageSource), default=MessageSource.USER)
+    content = Column(String(5000))
+    role = Column(Enum(MessageSource), default=MessageSource.USER)
     created_at = Column(
         DateTime, default=datetime.datetime.now(datetime.timezone.utc))
     updated_at = Column(

@@ -40,7 +40,7 @@ class ChatService:
         ChatService.create_chat_message(db, chat.id, chat_message)
 
         llm_response = ChatService.create_chat_message(
-            db, chat.id, llm_response, MessageSource.BOT)
+            db, chat.id, llm_response, MessageSource.ASSISTANT)
 
         return llm_response
 
@@ -56,13 +56,13 @@ class ChatService:
 
         for chat in chat_history:
             messages.append(ChatHistorySchema(
-                role="assistant" if chat.source == MessageSource.BOT else MessageSource.USER, content=chat.message
+                role=chat.role, content=chat.content
             ))
 
         response = LLMService().generate_response(message, messages, filters=filters)
 
         response = ChatService.create_chat_message(
-            db, chat_id, response, MessageSource.BOT)
+            db, chat_id, response, MessageSource.ASSISTANT)
 
         return response
 
@@ -72,7 +72,7 @@ class ChatService:
         if not chat:
             raise Exception("Chat not found")
         chat_message = ChatMessage(
-            message=message, chat_id=chat_id, source=source)
+            content=message, chat_id=chat_id, role=source)
         db.add(chat_message)
         db.commit()
         db.refresh(chat_message)

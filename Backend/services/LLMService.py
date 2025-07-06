@@ -2,6 +2,7 @@ import os
 from huggingface_hub import InferenceClient
 import ollama
 
+from services.KnowledgeBaseQuerier import KnowledgeBaseQuerier
 from services.RAGService import CSEKnowledgeBaseQuerier
 from schemas.chat import ChatHistorySchema
 from dotenv import load_dotenv
@@ -9,30 +10,35 @@ from dotenv import load_dotenv
 load_dotenv()
 
 MILVUS_URI = os.getenv('MILVUS_URI')
+MILVUS_TOKEN = os.getenv('MILVUS_TOKEN')
 MILVUS_USERNAME = os.getenv('MILVUS_USERNAME')
 MILVUS_PASSWORD = os.getenv('MILVUS_PASSWORD')
 HUGGING_FACE_API_KEY = os.getenv('HUGGING_FACE_API_KEY')
+GEMINI_API_KEY = os.getenv('GEMINI_TOKEN')
 
 
 class LLMService:
 
     def __init__(self):
         self.llm = HuggingFaceLLM()
-        self.rag = CSEKnowledgeBaseQuerier(
+        # self.rag = CSEKnowledgeBaseQuerier(
+        #     MILVUS_URI,
+        #     MILVUS_USERNAME,
+        #     MILVUS_PASSWORD,
+        #     "cse_annual_reports",
+        #     HUGGING_FACE_API_KEY
+        # )
+
+        self.model = KnowledgeBaseQuerier(
             MILVUS_URI,
-            MILVUS_USERNAME,
-            MILVUS_PASSWORD,
+            MILVUS_TOKEN,
             "cse_annual_reports",
-            HUGGING_FACE_API_KEY
+            HUGGING_FACE_API_KEY,
+            GEMINI_API_KEY
         )
 
     def generate_response(self, chat_message: str, history: list[ChatHistorySchema] = [], filters: dict = {}):
-        rag_data = self.rag.query(chat_message, history, filters=filters)
-
-        if rag_data:
-            return rag_data
-
-        return self.llm.generate_response(chat_message)
+        return self.model.perform_query(chat_message)
 
 
 class LLM:

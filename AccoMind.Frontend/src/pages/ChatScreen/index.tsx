@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { Menu, Send, User } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
-import ChatService from "@/services/chatService";
-import { Message } from "@/types/message";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import ChatService from "@/services/chatService.ts";
+import { Filter, Message } from "@/types/message.ts";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select.tsx";
 
-const ChatBotInterface: React.FC = () => {
+const ChatScreen: React.FC = () => {
   const [company, setCompany] = useState("");
+  const [year, setYear] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
 
@@ -48,10 +49,19 @@ const ChatBotInterface: React.FC = () => {
   const handleSendMessage = () => {
     if (newMessage.trim() === "") return;
 
+    const filters: Filter = {}
+
+    if (company) {
+      filters["company"] = company;
+    }
+
+    if (year) {
+      filters["year"] = year;
+    }
+
+
     const userMessage: Message = {
-      filters: {
-        company: company,
-      },
+      filters: filters,
       message: newMessage,
       source: "user",
       created_at: new Date().toISOString(),
@@ -77,13 +87,6 @@ const ChatBotInterface: React.FC = () => {
           <Menu className="h-6 w-6 text-gray-700" />
         </div>
         <div className="flex-1"></div>
-        {/* <nav className="space-y-4 flex-1">
-          <Button className="w-full text-left">New Chat</Button>
-          <Button className="w-full text-left">Recent Chats</Button>
-          <Button className="w-full text-left">Top 10 Growing Companies</Button>
-          <Button className="w-full text-left">Fix this code</Button>
-          <Button className="w-full text-left">Sample Copy</Button>
-        </nav> */}
         <div className="mt-4 flex items-center p-2 bg-gray-200 rounded-md">
           <User className="h-6 w-6 text-gray-700" />
           <div className="ml-2">
@@ -123,12 +126,12 @@ const ChatBotInterface: React.FC = () => {
                 <SelectValue placeholder="Select Company" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="COMMERCIAL_BANK_PLC">COMMERCIAL BANK PLC</SelectItem>
-                <SelectItem value="NDB_BANK_PLC">NDB BANK PLC</SelectItem>
-                <SelectItem value="ABANS_ELECTRICALS_PLC">ABANS ELECTRICALS PLC</SelectItem>
+                <SelectItem value="COMMERCIAL_BANK_OF_CEYLON_PLC">COMMERCIAL BANK PLC</SelectItem>
+                <SelectItem value="SEYLAN_BANK_PLC">NDB BANK PLC</SelectItem>
+                <SelectItem value="PAN_ASIA_BANKING_CORPORATION_PLC">PAN ASIA BANKING CORPORATION PLC</SelectItem>
               </SelectContent>
             </Select>
-            <Select onValueChange={(value) => setCompany(value)}>
+            <Select onValueChange={(value) => setYear(value)}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Select YEAR" />
               </SelectTrigger>
@@ -159,4 +162,4 @@ const ChatBotInterface: React.FC = () => {
   );
 };
 
-export default ChatBotInterface;
+export default ChatScreen;
