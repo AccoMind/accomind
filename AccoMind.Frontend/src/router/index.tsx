@@ -1,7 +1,6 @@
 import LoginScreen from "@/pages/LoginScreen.tsx"
 import {BrowserRouter, Routes, Route} from "react-router-dom"
 import LandingScreen from "@/pages/LandingScreen";
-import CompanyScreen from "@/pages/CompanyScreen";
 import ChatScreen from "@/pages/ChatScreen";
 import CompanyDashboard from "@/pages/CompanyDashboard";
 
