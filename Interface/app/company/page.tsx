@@ -14,20 +14,22 @@ import {
   BarChart3,
   Loader2,
   Building2,
+  Globe,
+  Newspaper,
 } from "lucide-react";
 import {
   CompanyService,
-  GoogleSearchResult,
+  LatestInfoResult,
   CompanyDocumentSummary,
 } from "@/services/companyService";
 
 export default function CompanyPage() {
   const [companyName, setCompanyName] = useState("Commercial Bank PLC");
-  const [googleResults, setGoogleResults] = useState<GoogleSearchResult[]>([]);
+  const [latestInfo, setLatestInfo] = useState<LatestInfoResult[]>([]);
   const [documentSummaries, setDocumentSummaries] = useState<
     CompanyDocumentSummary[]
   >([]);
-  const [searchLoading, setSearchLoading] = useState(false);
+  const [infoLoading, setInfoLoading] = useState(false);
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -50,54 +52,60 @@ export default function CompanyPage() {
 
     try {
       // Load all data in parallel
-      await Promise.all([loadGoogleSearchResults(), loadDocumentSummaries()]);
+      await Promise.all([loadLatestInformation(), loadDocumentSummaries()]);
     } catch (err: any) {
       setError("Failed to load company data. Please try again.");
       console.error("Error loading company data:", err);
     }
   };
 
-  const loadGoogleSearchResults = async () => {
-    setSearchLoading(true);
+  const loadLatestInformation = async () => {
+    setInfoLoading(true);
     try {
-      const response = await CompanyService.getGoogleSearchResults(companyName);
-      setGoogleResults(response.data);
+      const response = await CompanyService.getLatestInformation(companyName);
+      setLatestInfo(response.data);
     } catch (err) {
       // For demo purposes, set mock data if API fails
-      setGoogleResults([
+      setLatestInfo([
         {
-          title: `${companyName} - Official Website`,
-          url: `https://${companyName.toLowerCase().replace(/\s+/g, "")}.com`,
-          snippet: `Official website of ${companyName}. Learn about our banking services, corporate information, and latest financial reports.`,
+          title: `${companyName} - Latest Financial Performance Update`,
+          url: `https://${companyName.toLowerCase().replace(/\s+/g, "")}.com/investor-relations`,
+          snippet: `Recent financial performance shows ${companyName} maintaining strong market position with steady growth across key business segments and improved operational efficiency.`,
           displayUrl: `${companyName.toLowerCase().replace(/\s+/g, "")}.com`,
         },
         {
-          title: `${companyName} Annual Report 2023`,
+          title: `${companyName} Expands Digital Banking Services`,
           url: "#",
-          snippet: `Latest annual report showcasing ${companyName}'s financial performance, strategic initiatives, and market position for 2023.`,
-          displayUrl: "annual-reports.com",
+          snippet: `${companyName} announces significant expansion of digital banking services, introducing new mobile features and enhanced customer experience platforms to meet evolving market demands.`,
+          displayUrl: "banking-news.lk",
         },
         {
-          title: `${companyName} Stock Analysis - Yahoo Finance`,
+          title: `Market Analysis: ${companyName} Shows Strong Q4 Results`,
           url: "#",
-          snippet: `View the latest stock price, charts, and financial analysis for ${companyName} on Yahoo Finance.`,
-          displayUrl: "finance.yahoo.com",
+          snippet: `Industry analysts highlight ${companyName}'s robust Q4 performance, citing improved loan growth, cost management, and strategic investments in technology infrastructure.`,
+          displayUrl: "market-watch.com",
         },
         {
-          title: `${companyName} Company Profile - Bloomberg`,
+          title: `${companyName} Sustainability Initiative Launch`,
           url: "#",
-          snippet: `Get the latest company information, business summary, and key financial metrics for ${companyName}.`,
-          displayUrl: "bloomberg.com",
+          snippet: `${companyName} launches comprehensive sustainability program focusing on environmental responsibility, community development, and sustainable banking practices.`,
+          displayUrl: "sustainability-news.lk",
         },
         {
-          title: `${companyName} News and Updates`,
+          title: `${companyName} Leadership Changes and Strategic Direction`,
           url: "#",
-          snippet: `Latest news, press releases, and market updates related to ${companyName} and its business operations.`,
-          displayUrl: "reuters.com",
+          snippet: `Recent leadership appointments at ${companyName} signal renewed focus on innovation, customer-centric services, and digital transformation initiatives.`,
+          displayUrl: "business-today.lk",
+        },
+        {
+          title: `${companyName} Credit Rating and Financial Outlook`,
+          url: "#",
+          snippet: `Credit rating agencies maintain positive outlook for ${companyName}, citing strong capital adequacy, diversified revenue streams, and effective risk management practices.`,
+          displayUrl: "rating-agency.com",
         },
       ]);
     } finally {
-      setSearchLoading(false);
+      setInfoLoading(false);
     }
   };
 
@@ -211,11 +219,11 @@ export default function CompanyPage() {
         )}
 
         {/* Main Content */}
-        <Tabs defaultValue="search" className="space-y-6">
+        <Tabs defaultValue="info" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-2">
-            <TabsTrigger value="search" className="flex items-center gap-2">
-              <Search className="h-4 w-4" />
-              Google Search Results
+            <TabsTrigger value="info" className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              Latest Information
             </TabsTrigger>
             <TabsTrigger value="documents" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -223,24 +231,24 @@ export default function CompanyPage() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Google Search Results Tab */}
-          <TabsContent value="search" className="space-y-4">
+          {/* Latest Information Tab */}
+          <TabsContent value="info" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Search className="h-5 w-5" />
-                  Google Search Results for {companyName}
+                  <Newspaper className="h-5 w-5" />
+                  Latest Information about {companyName}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {searchLoading ? (
+                {infoLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                    <span>Loading search results...</span>
+                    <span>Loading latest information...</span>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {googleResults.map((result, index) => (
+                    {latestInfo.map((result, index) => (
                       <div
                         key={index}
                         className="border-b border-gray-200 last:border-b-0 pb-4 last:pb-0"

@@ -1,7 +1,7 @@
 import http from "./BaseService";
 import { CompanyByIdType, CompanyMarket, CompanyType } from "@/types/company";
 
-export interface GoogleSearchResult {
+export interface LatestInfoResult {
   title: string;
   url: string;
   snippet: string;
@@ -40,10 +40,10 @@ export class CompanyService {
 
   // New methods for enhanced company page
 
-  // Get Google search results about the company
-  public static getGoogleSearchResults(companyName: string) {
-    return http.get<GoogleSearchResult[]>(
-      `${CompanyService.path}/${encodeURIComponent(companyName)}/search`
+  // Get latest information about the company from web sources
+  public static getLatestInformation(companyName: string) {
+    return http.get<LatestInfoResult[]>(
+      `${CompanyService.path}/${encodeURIComponent(companyName)}/latest-info`
     );
   }
 
