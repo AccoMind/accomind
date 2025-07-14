@@ -10,6 +10,7 @@ import {ArrowLeft, Send, User, Bot} from "lucide-react"
 import {useChatStore} from "@/stores/CurrentChatStore";
 import ChatService from "@/services/chatService";
 import ReactMarkdown from "react-markdown";
+import Navigation from "@/components/Navigation";
 
 export default function ChatPage() {
     const {id} = useParams()
@@ -60,6 +61,7 @@ export default function ChatPage() {
 
     return (
         <div className="flex flex-col h-screen bg-gray-50">
+            <Navigation />
             {/* Header */}
             <div className="bg-white border-b border-gray-200 p-4">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">
